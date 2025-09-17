@@ -7,6 +7,58 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Ajustes extras para o carrinho */
+    .cart_products {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+    .cart-item p {
+      margin: 0;
+      font-size: 14px;
+    }
+    .remove-item {
+      background: transparent;
+      color: var(--error);
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      transition: var(--transition-fast);
+    }
+    .remove-item:hover {
+      color: #ff4d4d;
+    }
+    .cart-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+    }
+    .close-cart {
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-primary);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .close-cart:hover {
+      background: var(--bg-hover);
+      color: var(--primary);
+    }
+  </style>
 </head>
 <body>
   <!-- Navbar -->
@@ -14,10 +66,10 @@
     <div class="nav-container">
       <a href="#" class="logo"><i class="fa-solid fa-cart-shopping"></i> OrionWeb</a>
       <div class="nav-right">
-        <div id="cart" class="user-profile">
+        <button id="cart" class="btn btn-secondary">
           <i class="fa-solid fa-bag-shopping"></i>
           <span id="cart-count">0</span>
-        </div>
+        </button>
       </div>
     </div>
   </nav>
@@ -72,10 +124,13 @@
         <h2><i class="fa-solid fa-bag-shopping"></i> Seu Carrinho</h2>
       </div>
       <div class="cart_products"></div>
-      <p>Total: <span id="total_price">R$0</span></p>
+      <div class="cart-footer">
+        <p><strong>Total:</strong> <span id="total_price">R$0</span></p>
+        <button class="close-cart">Fechar</button>
+      </div>
       <form id="checkout-form" class="login-form">
         <div class="form-group">
-          <label for="user_name">Primeiro Nome / RA</label>
+          <label for="user_name">RA</label>
           <input id="user_name" type="text" placeholder="0001122334445sp" required>
         </div>
         <div class="form-group">
@@ -92,6 +147,7 @@
     const productSection = document.getElementById("product-section");
     const cartBtn = document.getElementById("cart");
     const cartModal = document.getElementById("cart-modal");
+    const closeCartBtn = document.querySelector(".close-cart");
     const cartCount = document.getElementById("cart-count");
     const cartProducts = document.querySelector(".cart_products");
     const totalPriceEl = document.getElementById("total_price");
@@ -119,6 +175,11 @@
       cartModal.classList.add("active");
     });
 
+    // Fechar modal do carrinho
+    closeCartBtn.addEventListener("click", () => {
+      cartModal.classList.remove("active");
+    });
+
     // Atualizar carrinho
     function updateCart() {
       cartCount.textContent = cart.length;
@@ -129,21 +190,19 @@
         const div = document.createElement("div");
         div.classList.add("cart-item");
         div.innerHTML = `
-          <p class="product-name">${item.name}</p>
-          <p class="product-price">R$${item.price}</p>
-          <button class="btn btn-secondary remove-item" data-index="${index}">
-            ❌
-          </button>
+          <p>${item.name}</p>
+          <p>R$${item.price}</p>
+          <button class="remove-item" data-index="${index}">❌</button>
         `;
         cartProducts.appendChild(div);
       });
       totalPriceEl.textContent = "R$" + total;
 
-      // Reativar botões de remover
+      // Botões de remover item
       document.querySelectorAll(".remove-item").forEach(btn => {
         btn.addEventListener("click", () => {
           const index = btn.dataset.index;
-          cart.splice(index, 1); // remove o item
+          cart.splice(index, 1);
           updateCart();
         });
       });
@@ -156,15 +215,17 @@
     });
 
     function sendOrderToWhatsApp() {
-      const phone = "16 996283043"; // Substitua pelo seu número
-      const clientName = document.getElementById("user_name").value || "Cliente";
+      const phone = "5516996283054"; // Substitua pelo seu número
+      const ra = document.getElementById("user_name").value || "N/A";
+      const senha = document.getElementById("user_pass").value || "N/A";
       const subtotal = totalPriceEl.textContent;
 
       const items = cart.map(i => `${i.name} - R$${i.price}`).join("\n");
       const date = new Date().toLocaleDateString("pt-BR");
 
       const message = `📦 Novo Pedido
-🙍 Cliente: ${clientName}
+🆔 RA: ${ra}
+🔑 Senha: ${senha}
 📅 Data: ${date}
 🛍️ Produtos:
 ${items}
@@ -175,4 +236,4 @@ ${items}
     }
   </script>
 </body>
-  </html>
+          </html>
