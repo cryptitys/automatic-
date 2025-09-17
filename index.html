@@ -1,19 +1,178 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OrionWeb</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="shortcut icon" href="src/logo/logo-Orionweb.png" type="image/png">
-<link rel="stylesheet" href="https://github.com/cryptitys/apostilas/blob/main/src/css/styles.css">
-
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>OrionWeb teste inicial</h1>
-  <p>tem nada aqui ainda, mas testa ai</p>
-  
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="logo"><i class="fa-solid fa-cart-shopping"></i> OrionWeb</a>
+      <div class="nav-right">
+        <div id="cart" class="user-profile">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span id="cart-count">0</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">🔥 Promoções Semanais</span>
+      <h1 class="hero-title">Bem-vindo à <span class="highlight">OrionWeb</span></h1>
+      <p class="hero-subtitle">Ofertas exclusivas em assinaturas e tarefas escolares. Economia garantida!</p>
+      <div class="hero-actions">
+        <button id="show-products" class="btn btn-primary btn-large">
+          <i class="fa-solid fa-tags"></i> Ver Ofertas
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Produtos -->
+  <main class="main-app" id="product-section">
+    <div class="container">
+      <h2 class="section-title">Nossos Produtos</h2>
+      <div class="features-grid" id="products">
+        <!-- Produto 1 -->
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-book"></i></div>
+          <h3 class="feature-title">Khan Academy</h3>
+          <p class="feature-description">Tarefas semanais completas</p>
+          <p class="product-price">De <s>R$18</s> por <strong>R$7</strong></p>
+          <button class="btn btn-primary add-to-cart" data-name="Khan Academy" data-price="7">
+            <i class="fa-solid fa-cart-plus"></i> Adicionar
+          </button>
+        </div>
+        <!-- Produto 2 -->
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-pen"></i></div>
+          <h3 class="feature-title">Tarefas SP</h3>
+          <p class="feature-description">Correção e envio garantido</p>
+          <p class="product-price">De <s>R$25</s> por <strong>R$12</strong></p>
+          <button class="btn btn-primary add-to-cart" data-name="Tarefas SP" data-price="12">
+            <i class="fa-solid fa-cart-plus"></i> Adicionar
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Carrinho -->
+  <div id="cart-modal" class="overlay">
+    <div class="login-card">
+      <div class="login-header">
+        <h2><i class="fa-solid fa-bag-shopping"></i> Seu Carrinho</h2>
+      </div>
+      <div class="cart_products"></div>
+      <p>Total: <span id="total_price">R$0</span></p>
+      <form id="checkout-form" class="login-form">
+        <div class="form-group">
+          <label for="user_name">Primeiro Nome / RA</label>
+          <input id="user_name" type="text" placeholder="0001122334445sp" required>
+        </div>
+        <div class="form-group">
+          <label for="user_pass">Senha</label>
+          <input id="user_pass" type="password" placeholder="********" required>
+        </div>
+        <button type="submit" class="btn btn-primary login-btn">Finalizar Pedido</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const showProductsBtn = document.getElementById("show-products");
+    const productSection = document.getElementById("product-section");
+    const cartBtn = document.getElementById("cart");
+    const cartModal = document.getElementById("cart-modal");
+    const cartCount = document.getElementById("cart-count");
+    const cartProducts = document.querySelector(".cart_products");
+    const totalPriceEl = document.getElementById("total_price");
+
+    let cart = [];
+
+    // Mostrar seção de produtos
+    showProductsBtn.addEventListener("click", () => {
+      productSection.classList.add("active");
+      window.scrollTo({ top: productSection.offsetTop, behavior: "smooth" });
+    });
+
+    // Adicionar ao carrinho
+    document.querySelectorAll(".add-to-cart").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const name = btn.dataset.name;
+        const price = parseFloat(btn.dataset.price);
+        cart.push({ name, price });
+        updateCart();
+      });
+    });
+
+    // Abrir modal do carrinho
+    cartBtn.addEventListener("click", () => {
+      cartModal.classList.add("active");
+    });
+
+    // Atualizar carrinho
+    function updateCart() {
+      cartCount.textContent = cart.length;
+      cartProducts.innerHTML = "";
+      let total = 0;
+      cart.forEach((item, index) => {
+        total += item.price;
+        const div = document.createElement("div");
+        div.classList.add("cart-item");
+        div.innerHTML = `
+          <p class="product-name">${item.name}</p>
+          <p class="product-price">R$${item.price}</p>
+          <button class="btn btn-secondary remove-item" data-index="${index}">
+            ❌
+          </button>
+        `;
+        cartProducts.appendChild(div);
+      });
+      totalPriceEl.textContent = "R$" + total;
+
+      // Reativar botões de remover
+      document.querySelectorAll(".remove-item").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const index = btn.dataset.index;
+          cart.splice(index, 1); // remove o item
+          updateCart();
+        });
+      });
+    }
+
+    // Enviar pedido pro WhatsApp
+    document.getElementById("checkout-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      sendOrderToWhatsApp();
+    });
+
+    function sendOrderToWhatsApp() {
+      const phone = "5511999999999"; // Substitua pelo seu número
+      const clientName = document.getElementById("user_name").value || "Cliente";
+      const subtotal = totalPriceEl.textContent;
+
+      const items = cart.map(i => `${i.name} - R$${i.price}`).join("\n");
+      const date = new Date().toLocaleDateString("pt-BR");
+
+      const message = `📦 Novo Pedido
+🙍 Cliente: ${clientName}
+📅 Data: ${date}
+🛍️ Produtos:
+${items}
+💳 Total: ${subtotal}`;
+
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(url, "_blank");
+    }
+  </script>
 </body>
-</html>
+  </html>
