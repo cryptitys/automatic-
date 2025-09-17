@@ -301,259 +301,227 @@
   </div>
 
   <script>
-    // Elementos DOM
-    const showProductsBtn = document.getElementById("show-products");
-    const productSection = document.getElementById("product-section");
-    const cartBtn = document.getElementById("cart");
-    const cartModal = document.getElementById("cart-modal");
-    const closeCartBtn = document.querySelector(".close-cart");
-    const clearCartBtn = document.getElementById("clear-cart");
-    const cartCount = document.getElementById("cart-count");
-    const cartProducts = document.querySelector(".cart_products");
-    const totalPriceEl = document.getElementById("total_price");
-    const checkoutForm = document.getElementById("checkout-form");
-    const saveInfoBtn = document.getElementById("save-info");
-    const notification = document.getElementById("notification");
-    const whatsappBtn = document.getElementById("whatsapp-btn");
-    const filterBtns = document.querySelectorAll(".filter-btn");
-    const faqQuestions = document.querySelectorAll(".faq-question");
+  // Elementos DOM
+  const showProductsBtn = document.getElementById("show-products");
+  const productSection = document.getElementById("product-section");
+  const cartBtn = document.getElementById("cart");
+  const cartModal = document.getElementById("cart-modal");
+  const closeCartBtn = document.querySelector(".close-cart");
+  const clearCartBtn = document.getElementById("clear-cart");
+  const cartCount = document.getElementById("cart-count");
+  const cartProducts = document.querySelector(".cart_products");
+  const totalPriceEl = document.getElementById("total_price");
+  const checkoutForm = document.getElementById("checkout-form");
+  const saveInfoBtn = document.getElementById("save-info");
+  const notification = document.getElementById("notification");
+  const whatsappBtn = document.getElementById("whatsapp-btn");
+  const filterBtns = document.querySelectorAll(".filter-btn");
+  const faqQuestions = document.querySelectorAll(".faq-question");
 
-    // Estado da aplicação
-    let cart = [];
-    let quantities = {};
+  // Estado da aplicação
+  let cart = [];
+  let quantities = {};
 
-    // Inicialização
-    document.querySelectorAll('.product-card').forEach(card => {
-      const productName = card.querySelector('.feature-title').textContent;
-      quantities[productName] = 1;
+  // Inicialização (usando data-name, não o título)
+  document.querySelectorAll('.product-card').forEach(card => {
+    const productName = card.querySelector('.add-to-cart').dataset.name;
+    quantities[productName] = 1;
+  });
+
+  // Mostrar seção de produtos
+  showProductsBtn.addEventListener("click", () => {
+    productSection.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // Filtro de categorias
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const category = btn.dataset.category;
+      filterProducts(category);
     });
+  });
 
-    // Mostrar seção de produtos
-    showProductsBtn.addEventListener("click", () => {
-      productSection.scrollIntoView({ behavior: 'smooth' });
-    });
-
-    // Filtro de categorias
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        // Remove active class de todos os botões
-        filterBtns.forEach(b => b.classList.remove('active'));
-        // Adiciona active class ao botão clicado
-        btn.classList.add('active');
-        
-        const category = btn.dataset.category;
-        filterProducts(category);
-      });
-    });
-
-    function filterProducts(category) {
-      const products = document.querySelectorAll('.product-card');
-      
-      products.forEach(product => {
-        if (category === 'all' || product.dataset.category === category) {
-          product.style.display = 'flex';
-        } else {
-          product.style.display = 'none';
-        }
-      });
-    }
-
-    // FAQ Accordion
-    faqQuestions.forEach(question => {
-      question.addEventListener('click', () => {
-        const answer = question.nextElementSibling;
-        const icon = question.querySelector('i');
-        
-        // Alternar a resposta
-        answer.classList.toggle('active');
-        
-        // Rotacionar o ícone
-        if (answer.classList.contains('active')) {
-          icon.style.transform = 'rotate(180deg)';
-        } else {
-          icon.style.transform = 'rotate(0deg)';
-        }
-      });
-    });
-
-    // Controles de quantidade
-    document.querySelectorAll('.quantity-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const name = e.target.dataset.name;
-        const isPlus = e.target.classList.contains('plus');
-        const quantityElement = document.querySelector(`.quantity-value[data-name="${name}"]`);
-        
-        if (isPlus) {
-          quantities[name]++;
-        } else if (quantities[name] > 1) {
-          quantities[name]--;
-        }
-        
-        quantityElement.textContent = quantities[name];
-      });
-    });
-
-    // Adicionar ao carrinho
-    document.querySelectorAll(".add-to-cart").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const name = btn.dataset.name;
-        const price = parseFloat(btn.dataset.price);
-        const quantity = quantities[name];
-        
-        // Verificar se o produto já está no carrinho
-        const existingItemIndex = cart.findIndex(item => item.name === name);
-        
-        if (existingItemIndex >= 0) {
-          // Atualizar quantidade se já existir
-          cart[existingItemIndex].quantity += quantity;
-          cart[existingItemIndex].total = cart[existingItemIndex].quantity * price;
-        } else {
-          // Adicionar novo item
-          cart.push({ 
-            name, 
-            price, 
-            quantity,
-            total: price * quantity
-          });
-        }
-        
-        // Resetar quantidade para 1
-        quantities[name] = 1;
-        document.querySelector(`.quantity-value[data-name="${name}"]`).textContent = '1';
-        
-        updateCart();
-        showNotification();
-      });
-    });
-
-    // Botão do WhatsApp
-    whatsappBtn.addEventListener('click', () => {
-      const phone = "5516996283054"; // Substitua pelo seu número
-      const message = "Olá! Gostaria de mais informações sobre os produtos da OrionWeb.";
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      window.open(url, "_blank");
-    });
-
-    // Abrir modal do carrinho
-    cartBtn.addEventListener("click", () => {
-      cartModal.classList.add("active");
-    });
-
-    // Fechar modal do carrinho
-    closeCartBtn.addEventListener("click", () => {
-      cartModal.classList.remove("active");
-    });
-
-    // Limpar carrinho
-    clearCartBtn.addEventListener("click", () => {
-      if (cart.length > 0 && confirm("Tem certeza que deseja esvaziar o carrinho?")) {
-        cart = [];
-        updateCart();
-      }
-    });
-
-    // Salvar informações de login
-    saveInfoBtn.addEventListener("click", () => {
-      const ra = document.getElementById("user_name").value;
-      const password = document.getElementById("user_pass").value;
-      
-      if (ra && password) {
-        localStorage.setItem("orion_ra", ra);
-        localStorage.setItem("orion_password", password);
-        showNotification("Informações salvas com sucesso!");
+  function filterProducts(category) {
+    const products = document.querySelectorAll('.product-card');
+    products.forEach(product => {
+      if (category === 'all' || product.dataset.category === category) {
+        product.style.display = 'flex';
       } else {
-        alert("Por favor, preencha ambos os campos antes de salvar fiote.");
+        product.style.display = 'none';
       }
     });
+  }
 
-    // Carregar informações salvas (se existirem)
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedRA = localStorage.getItem("orion_ra");
-      const savedPassword = localStorage.getItem("orion_password");
-      
-      if (savedRA) {
-        document.getElementById("user_name").value = savedRA;
-      }
-      
-      if (savedPassword) {
-        document.getElementById("user_pass").value = savedPassword;
-      }
+  // FAQ Accordion
+  faqQuestions.forEach(question => {
+    question.addEventListener('click', () => {
+      const answer = question.nextElementSibling;
+      const icon = question.querySelector('i');
+      answer.classList.toggle('active');
+      icon.style.transform = answer.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0deg)';
     });
+  });
 
-    // Atualizar carrinho
-    function updateCart() {
-      cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
-      
-      if (cart.length === 0) {
-        cartProducts.innerHTML = '<div class="empty-cart">Seu carrinho está vazio</div>';
-        totalPriceEl.textContent = "R$0";
+  // Controles de quantidade
+  document.querySelectorAll('.quantity-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const name = e.currentTarget.dataset.name; // corrigido
+      const isPlus = e.currentTarget.classList.contains('plus');
+      const quantityElement = document.querySelector(`.quantity-value[data-name="${name}"]`);
+
+      if (isPlus) {
+        quantities[name]++;
+      } else if (quantities[name] > 1) {
+        quantities[name]--;
+      }
+
+      quantityElement.textContent = quantities[name];
+    });
+  });
+
+  // Adicionar ao carrinho
+  document.querySelectorAll(".add-to-cart").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.name;
+      const price = parseFloat(btn.dataset.price);
+      const quantity = quantities[name];
+
+      if (isNaN(price)) {
+        alert("Erro: preço inválido para " + name);
         return;
       }
-      
-      cartProducts.innerHTML = "";
-      let total = 0;
-      
-      cart.forEach((item, index) => {
-        total += item.total;
-        const div = document.createElement("div");
-        div.classList.add("cart-item");
-        div.innerHTML = `
-          <div>
-            <p><strong>${item.name}</strong></p>
-            <p>${item.quantity} x R$${item.price}</p>
-          </div>
-          <p>R$${item.total.toFixed(2)}</p>
-          <button class="remove-item" data-index="${index}">❌</button>
-        `;
-        cartProducts.appendChild(div);
-      });
-      
-      totalPriceEl.textContent = "R$" + total.toFixed(2);
 
-      // Botões de remover item
-      document.querySelectorAll(".remove-item").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const index = btn.dataset.index;
-          cart.splice(index, 1);
-          updateCart();
-        });
-      });
-    }
+      const existingItemIndex = cart.findIndex(item => item.name === name);
 
-    // Mostrar notificação
-    function showNotification(message = "Produto adicionado ao carrinho!") {
-      notification.innerHTML = message.includes('sucesso') ? 
-        '<i class="fas fa-check-circle"></i> ' + message : 
-        '<i class="fas fa-cart-plus"></i> ' + message;
-      notification.classList.add("show");
-      
-      setTimeout(() => {
-        notification.classList.remove("show");
-      }, 3000);
-    }
-
-    // Enviar pedido pro WhatsApp
-    checkoutForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      
-      if (cart.length === 0) {
-        alert("Seu carrinho está vazio. Adicione produtos antes de finalizar o pedido.");
-        return;
+      if (existingItemIndex >= 0) {
+        cart[existingItemIndex].quantity += quantity;
+        cart[existingItemIndex].total = cart[existingItemIndex].quantity * price;
+      } else {
+        cart.push({ name, price, quantity, total: price * quantity });
       }
-      
-      sendOrderToWhatsApp();
+
+      quantities[name] = 1;
+      document.querySelector(`.quantity-value[data-name="${name}"]`).textContent = '1';
+
+      updateCart();
+      showNotification();
+    });
+  });
+
+  // Botão do WhatsApp
+  whatsappBtn.addEventListener('click', () => {
+    const phone = "5516996283054";
+    const message = "Olá! Gostaria de mais informações sobre os produtos da OrionWeb.";
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  });
+
+  // Abrir e fechar modal do carrinho
+  cartBtn.addEventListener("click", () => cartModal.classList.add("active"));
+  closeCartBtn.addEventListener("click", () => cartModal.classList.remove("active"));
+
+  // Limpar carrinho
+  clearCartBtn.addEventListener("click", () => {
+    if (cart.length > 0 && confirm("Tem certeza que deseja esvaziar o carrinho?")) {
+      cart = [];
+      updateCart();
+    }
+  });
+
+  // Salvar informações de login
+  saveInfoBtn.addEventListener("click", () => {
+    const ra = document.getElementById("user_name").value;
+    const password = document.getElementById("user_pass").value;
+    if (ra && password) {
+      localStorage.setItem("orion_ra", ra);
+      localStorage.setItem("orion_password", password);
+      showNotification("Informações salvas com sucesso!");
+    } else {
+      alert("Por favor, preencha ambos os campos antes de salvar.");
+    }
+  });
+
+  // Carregar informações salvas
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedRA = localStorage.getItem("orion_ra");
+    const savedPassword = localStorage.getItem("orion_password");
+    if (savedRA) document.getElementById("user_name").value = savedRA;
+    if (savedPassword) document.getElementById("user_pass").value = savedPassword;
+  });
+
+  // Atualizar carrinho
+  function updateCart() {
+    cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+
+    if (cart.length === 0) {
+      cartProducts.innerHTML = '<div class="empty-cart">Seu carrinho está vazio</div>';
+      totalPriceEl.textContent = "R$0";
+      return;
+    }
+
+    cartProducts.innerHTML = "";
+    let total = 0;
+
+    cart.forEach((item, index) => {
+      total += item.total;
+      const div = document.createElement("div");
+      div.classList.add("cart-item");
+      div.innerHTML = `
+        <div>
+          <p><strong>${item.name}</strong></p>
+          <p>${item.quantity} x R$${item.price.toFixed(2)}</p>
+        </div>
+        <p>R$${item.total.toFixed(2)}</p>
+        <button class="remove-item" data-index="${index}">❌</button>
+      `;
+      cartProducts.appendChild(div);
     });
 
-    function sendOrderToWhatsApp() {
-      const phone = "5516996283054"; // Substitua pelo seu número
-      const ra = document.getElementById("user_name").value || "N/A";
-      const senha = document.getElementById("user_pass").value || "N/A";
-      const subtotal = totalPriceEl.textContent;
+    totalPriceEl.textContent = "R$" + total.toFixed(2);
 
-      const items = cart.map(i => `${i.quantity}x ${i.name} - R$${i.total.toFixed(2)}`).join("\n");
-      const date = new Date().toLocaleDateString("pt-BR");
+    document.querySelectorAll(".remove-item").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const index = btn.dataset.index;
+        cart.splice(index, 1);
+        updateCart();
+      });
+    });
+  }
 
-      const message = `📦 NOVO PEDIDO ORIONWEB
+  // Notificação
+  function showNotification(message = "Produto adicionado ao carrinho!") {
+    notification.innerHTML = message.includes('sucesso')
+      ? '<i class="fas fa-check-circle"></i> ' + message
+      : '<i class="fas fa-cart-plus"></i> ' + message;
+    notification.classList.add("show");
+    setTimeout(() => notification.classList.remove("show"), 3000);
+  }
+
+  // Finalizar pedido
+  checkoutForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (cart.length === 0) {
+      alert("Seu carrinho está vazio. Adicione produtos antes de finalizar o pedido.");
+      return;
+    }
+    sendOrderToWhatsApp();
+  });
+
+  function sendOrderToWhatsApp() {
+  const phone = "5516996283054"; // seu número
+  const ra = document.getElementById("user_name").value || "N/A";
+  const senha = document.getElementById("user_pass").value || "N/A";
+  const subtotal = totalPriceEl.textContent;
+
+  const items = cart.map(i => `${i.quantity}x ${i.name} - R$${i.total.toFixed(2)}`).join("\n");
+  const date = new Date().toLocaleDateString("pt-BR");
+
+  // Chave Pix
+  const pix = `00020101021126510014br.gov.bcb.pix0129vrodriguespereira38@gmail.com5204000053039865802BR5917VITOR H R PEREIRA6006MOTUCA62070503***6304DC56`;
+
+  const message = `📦 NOVO PEDIDO ORIONWEB
       
 🆔 RA: ${ra}
 🔑 Senha: ${senha}
@@ -564,24 +532,29 @@ ${items}
 
 💳 Total: ${subtotal}
 
+💳 Forma de pagamento: PIX  
+🔑 Chave Pix:  
+${pix}
+
+📌 Faça o pagamento via Pix e envie o comprovante para a realização do pedido. Agradeço! 🙏
+
 ⏰ Pedido realizado em: ${new Date().toLocaleTimeString('pt-BR')}`;
 
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      window.open(url, "_blank");
-      
-      // Limpar carrinho após envio
-      cart = [];
-      updateCart();
-      checkoutForm.reset();
-      cartModal.classList.remove("active");
-    }
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  window.open(url, "_blank");
 
-    // Fechar modal clicando fora dele
-    document.addEventListener('click', (e) => {
-      if (e.target === cartModal) {
-        cartModal.classList.remove('active');
-      }
-    });
+  // Limpa carrinho e formulário
+  cart = [];
+  updateCart();
+  checkoutForm.reset();
+  cartModal.classList.remove("active");
+  }
+
+  // Fechar modal clicando fora
+  document.addEventListener('click', (e) => {
+    if (e.target === cartModal) cartModal.classList.remove('active');
+  });
+                  
   </script>
 </body>
 </html>
